@@ -33,6 +33,9 @@ Contenido
 
 3) ENVÍO DEL CORREO a auxingenieria@mymtorres.com
 -------------------------------------------------
+  Al pulsar "Enviar correo" se escoge el destinatario (lista en config.js, "correosDestino"),
+  o se escribe otro correo, y se pueden agregar copias (máximo 5 destinatarios).
+
   Sin configurar nada, el botón "Enviar correo":
     - En celular: abre el menú Compartir con el PDF adjunto; escoja Gmail/Outlook
       (el correo destino queda copiado para pegarlo en "Para").

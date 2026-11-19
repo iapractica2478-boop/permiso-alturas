@@ -5,6 +5,7 @@
 
   var CFG = window.TSA_CONFIG || {};
   var DESTINO = CFG.correoDestino || "auxingenieria@mymtorres.com";
+  var DEST = DESTINO; // destinatario(s) escogido(s) al enviar
   var STORE_KEY = "tsa_permiso_borrador_v1";
   var N_WORKERS = 5;
   var OTRO = "__otro__";
@@ -588,37 +589,79 @@
     try { file = new File([p.blob], p.name, { type: "application/pdf" }); } catch (e) { /* navegador antiguo */ }
     var esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     if (esMovil && file && navigator.canShare && navigator.canShare({ files: [file] })) {
-      try { navigator.clipboard && navigator.clipboard.writeText(DESTINO); } catch (e) { /* opcional */ }
-      return navigator.share({ files: [file], title: asunto(), text: "Para: " + DESTINO + "\n\n" + cuerpo() })
-        .then(function () { toast("Elija su app de correo y envíe a " + DESTINO + " (copiado).", 6000); })
+      try { navigator.clipboard && navigator.clipboard.writeText(DEST); } catch (e) { /* opcional */ }
+      return navigator.share({ files: [file], title: asunto(), text: "Para: " + DEST + "\n\n" + cuerpo() })
+        .then(function () { toast("Elija su app de correo y envíe a " + DEST + " (copiado).", 6000); })
         .catch(function (e) { if (e && e.name === "AbortError") return; mailtoFallback(p); });
     }
     mailtoFallback(p);
     return Promise.resolve();
   }
+  function lista_mailto() { return DEST.split(/,\s*/).map(encodeURIComponent).join(","); }
   function mailtoFallback(p) {
     download(p.blob, p.name);
-    var href = "mailto:" + DESTINO + "?subject=" + encodeURIComponent(asunto()) +
+    var href = "mailto:" + lista_mailto() + "?subject=" + encodeURIComponent(asunto()) +
       "&body=" + encodeURIComponent(cuerpo() + "\n\n(Adjunte el archivo " + p.name + " que se acaba de descargar.)");
     setTimeout(function () { location.href = href; }, 400);
-    toast("Se descargó el PDF. Adjúntelo en el correo que se abrió para " + DESTINO + ".", 7000);
+    toast("Se descargó el PDF. Adjúntelo en el correo que se abrió para " + DEST + ".", 7000);
+  }
+
+  // ---------- Selección de destinatario ----------
+  var EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
+  function listaCorreos() {
+    var l = (CFG.correosDestino && CFG.correosDestino.length ? CFG.correosDestino : [DESTINO]).slice();
+    return l;
+  }
+  function abrirDestino() {
+    var sel = $("mailSel"), otro = $("mailOtro"), extra = $("mailExtra"), wrapO = $("mailOtroWrap");
+    sel.innerHTML = "";
+    listaCorreos().forEach(function (c) { sel.appendChild(el("option", { value: c, text: c })); });
+    sel.appendChild(el("option", { value: OTRO, text: "Otro correo (escribir)…" }));
+    if (S.mailSel && (S.mailSel === OTRO || listaCorreos().indexOf(S.mailSel) >= 0)) sel.value = S.mailSel;
+    otro.value = S.mailOtro || ""; extra.value = S.mailExtra || "";
+    function tog() { wrapO.classList.toggle("hidden", sel.value !== OTRO); }
+    sel.onchange = tog; tog();
+    [otro, extra].forEach(function (x) { x.classList.remove("req-missing"); });
+    $("mailModal").classList.remove("hidden");
+  }
+  function confirmarDestino() {
+    var sel = $("mailSel"), otro = $("mailOtro"), extra = $("mailExtra");
+    var lista = [];
+    if (sel.value === OTRO) {
+      var o = otro.value.trim();
+      if (!EMAIL_RE.test(o)) { otro.classList.add("req-missing"); otro.focus(); toast("Escriba un correo válido."); return; }
+      lista.push(o);
+    } else lista.push(sel.value);
+    var ex = extra.value.split(/[,;\s]+/).map(function (x) { return x.trim(); }).filter(Boolean);
+    for (var i = 0; i < ex.length; i++) {
+      if (!EMAIL_RE.test(ex[i])) { extra.classList.add("req-missing"); extra.focus(); toast("Correo no válido: " + ex[i]); return; }
+      if (lista.indexOf(ex[i]) < 0) lista.push(ex[i]);
+    }
+    if (lista.length > 5) { toast("Máximo 5 destinatarios."); return; }
+    S.mailSel = sel.value; S.mailOtro = otro.value.trim(); S.mailExtra = extra.value.trim(); save();
+    DEST = lista.join(", ");
+    $("mailModal").classList.add("hidden");
+    enviar();
   }
 
   function onEnviar() {
     if (!validar()) return;
+    abrirDestino();
+  }
+  function enviar() {
     makePdf().then(function (p) {
       var url = (CFG.urlEnvioCorreo || "").trim();
       if (!url) return enviarManual(p);
-      busy(true, "Enviando correo a " + DESTINO + "…");
+      busy(true, "Enviando correo a " + DEST + "…");
       return blobToBase64(p.blob).then(function (b64) {
         return fetch(url, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ to: DESTINO, subject: asunto(), body: cuerpo(), filename: p.name, pdf: b64 })
+          body: JSON.stringify({ to: DEST, subject: asunto(), body: cuerpo(), filename: p.name, pdf: b64 })
         });
       }).then(function (r) { return r.json(); }).then(function (j) {
         busy(false);
-        if (j && j.ok) toast("✔ Enviado a " + DESTINO, 5000);
+        if (j && j.ok) toast("✔ Enviado a " + DEST, 5000);
         else throw new Error((j && j.error) || "Error del servidor");
       }).catch(function (e) {
         busy(false); console.error(e);
@@ -641,6 +684,8 @@
     $("btnPdf").addEventListener("click", onPdf);
     $("btnEnviar").addEventListener("click", onEnviar);
     $("btnNuevo").addEventListener("click", onNuevo);
+    $("mailOk").addEventListener("click", confirmarDestino);
+    $("mailCancel").addEventListener("click", function () { $("mailModal").classList.add("hidden"); });
     loadPersonal().then(function (fromExcel) {
       sortPersonal();
       $("personalInfo").textContent = personal.length + " persona(s) en el listado" + (fromExcel ? " (LISTADO_PERSONAL.xlsx)" : "") +

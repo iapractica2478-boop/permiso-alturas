@@ -9,8 +9,13 @@ function doPost(e) {
     var d = JSON.parse(e.postData.contents);
     var nombre = String(d.filename || "Permiso_Alturas.pdf").replace(/[^\w.\-]/g, "_");
     var pdf = Utilities.newBlob(Utilities.base64Decode(d.pdf), "application/pdf", nombre);
+    // Destinatarios escogidos en la página (máximo 5); si no llega ninguno, se usa DESTINO.
+    var re = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
+    var para = String(d.to || "").split(/[,;]+/).map(function (x) { return x.trim(); })
+      .filter(function (x) { return re.test(x); }).slice(0, 5);
+    if (!para.length) para = [DESTINO];
     MailApp.sendEmail({
-      to: DESTINO,                       // siempre a este correo (no se puede cambiar desde la página)
+      to: para.join(","),
       subject: String(d.subject || "Permiso de Trabajo en Alturas").slice(0, 200),
       body: String(d.body || ""),
       attachments: [pdf],

@@ -2,8 +2,14 @@
 // Puede editar este archivo con el Bloc de notas.
 
 window.TSA_CONFIG = {
-  // Correo que recibe los permisos
+  // Correo principal que recibe los permisos
   correoDestino: "auxingenieria@mymtorres.com",
+
+  // Correos que aparecen en la lista "Enviar a" (el primero sale escogido).
+  // También se puede escribir otro correo y agregar copias al enviar.
+  correosDestino: [
+    "auxingenieria@mymtorres.com"
+  ],
 
   // URL del Google Apps Script que envía el correo con el PDF adjunto
   // (ver LEEME.txt, paso "Envío automático"). Si se deja vacío, el botón

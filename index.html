@@ -161,6 +161,28 @@
   </div>
 </div>
 
+<!-- Destinatario del correo -->
+<div id="mailModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="mailTitle">
+  <div class="modal-box">
+    <h3 id="mailTitle">Enviar permiso por correo</h3>
+    <div class="grid2" style="grid-template-columns:1fr">
+      <label>Enviar a
+        <select id="mailSel"></select>
+      </label>
+      <label id="mailOtroWrap" class="hidden">Escriba el correo
+        <input id="mailOtro" type="email" inputmode="email" autocomplete="email" placeholder="nombre@empresa.com">
+      </label>
+      <label>Con copia a (opcional)
+        <input id="mailExtra" type="text" inputmode="email" autocomplete="off" placeholder="otro@correo.com, otro2@correo.com">
+      </label>
+    </div>
+    <div class="modal-actions">
+      <button type="button" id="mailCancel" class="ghost">Cancelar</button>
+      <button type="button" id="mailOk" class="primary">Enviar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast" class="toast hidden"></div>
 <div id="busy" class="busy hidden"><div class="spinner"></div><p id="busyText">Generando PDF…</p></div>
 
