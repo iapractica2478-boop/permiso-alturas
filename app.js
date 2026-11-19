@@ -715,13 +715,17 @@
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ to: DEST, from: S.mailDe || "", subject: asunto(), body: cuerpo(), filename: p.name, pdf: b64 })
         });
-      }).then(function (r) { return r.json(); }).then(function (j) {
+      }).then(function (r) {
+        return r.text().then(function (t) {
+          try { return JSON.parse(t); } catch (x) { throw new Error("respuesta no válida del script: " + t.slice(0, 80)); }
+        });
+      }).then(function (j) {
         busy(false);
         if (j && j.ok) { cerrarGmailWin(); marcarEnviado(p.etapa); toast("✔ Enviado a " + DEST, 5000); }
         else throw new Error((j && j.error) || "Error del servidor");
       }).catch(function (e) {
         busy(false); console.error(e);
-        toast("No se pudo enviar automáticamente. Se abrirá el envío manual.", 4000);
+        toast("No se pudo enviar automáticamente (" + (e && e.message ? e.message : e) + "). Se abrirá el envío manual.", 9000);
         return enviarManual(p);
       });
     }).catch(function (e) { busy(false); cerrarGmailWin(); console.error(e); toast("No se pudo generar el PDF. Intente de nuevo."); });
