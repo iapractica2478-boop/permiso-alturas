@@ -11,6 +11,11 @@ window.TSA_CONFIG = {
     "auxingenieria@mymtorres.com"
   ],
 
+  // Por dónde sale el correo cuando no hay envío automático:
+  //   "gmail"  -> abre Gmail (mail.google.com) con destinatario, asunto y texto listos
+  //   "mailto" -> abre la aplicación de correo predeterminada del equipo
+  salidaCorreo: "gmail",
+
   // URL del Google Apps Script que envía el correo con el PDF adjunto
   // (ver LEEME.txt, paso "Envío automático"). Si se deja vacío, el botón
   // "Enviar correo" abre la aplicación de correo / compartir del equipo.

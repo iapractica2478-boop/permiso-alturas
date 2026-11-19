@@ -591,20 +591,31 @@
     if (esMovil && file && navigator.canShare && navigator.canShare({ files: [file] })) {
       try { navigator.clipboard && navigator.clipboard.writeText(DEST); } catch (e) { /* opcional */ }
       return navigator.share({ files: [file], title: asunto(), text: "Para: " + DEST + "\n\n" + cuerpo() })
-        .then(function () { toast("Elija su app de correo y envíe a " + DEST + " (copiado).", 6000); })
+        .then(function () { toast("Escoja Gmail y envíe a " + DEST + " (correo copiado, péguelo en Para).", 7000); })
         .catch(function (e) { if (e && e.name === "AbortError") return; mailtoFallback(p); });
     }
     mailtoFallback(p);
     return Promise.resolve();
   }
   function lista_mailto() { return DEST.split(/,\s*/).map(encodeURIComponent).join(","); }
+  var gmailWin = null; // pestaña abierta al pulsar Enviar (evita el bloqueo de ventanas emergentes)
+  function usaGmail() { return String(CFG.salidaCorreo || "gmail").toLowerCase() === "gmail"; }
   function mailtoFallback(p) {
     download(p.blob, p.name);
-    var href = "mailto:" + lista_mailto() + "?subject=" + encodeURIComponent(asunto()) +
-      "&body=" + encodeURIComponent(cuerpo() + "\n\n(Adjunte el archivo " + p.name + " que se acaba de descargar.)");
+    var nota = "\n\n(Adjunte el archivo " + p.name + " que se acaba de descargar.)";
+    if (usaGmail()) {
+      var g = "https://mail.google.com/mail/?view=cm&fs=1&to=" + lista_mailto() +
+        "&su=" + encodeURIComponent(asunto()) + "&body=" + encodeURIComponent(cuerpo() + nota);
+      if (gmailWin && !gmailWin.closed) { gmailWin.location.href = g; gmailWin = null; }
+      else setTimeout(function () { var w = window.open(g, "_blank"); if (!w) location.href = g; }, 300);
+      toast("Se descargó el PDF. En Gmail pulse el clip 📎 y adjunte " + p.name + ".", 8000);
+      return;
+    }
+    var href = "mailto:" + lista_mailto() + "?subject=" + encodeURIComponent(asunto()) + "&body=" + encodeURIComponent(cuerpo() + nota);
     setTimeout(function () { location.href = href; }, 400);
     toast("Se descargó el PDF. Adjúntelo en el correo que se abrió para " + DEST + ".", 7000);
   }
+  function cerrarGmailWin() { if (gmailWin && !gmailWin.closed) gmailWin.close(); gmailWin = null; }
 
   // ---------- Selección de destinatario ----------
   var EMAIL_RE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/;
@@ -641,6 +652,13 @@
     S.mailSel = sel.value; S.mailOtro = otro.value.trim(); S.mailExtra = extra.value.trim(); save();
     DEST = lista.join(", ");
     $("mailModal").classList.add("hidden");
+    var esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (usaGmail() && !esMovil && !(CFG.urlEnvioCorreo || "").trim()) {
+      try {
+        gmailWin = window.open("", "_blank");
+        if (gmailWin) gmailWin.document.write("<p style='font:16px Arial;padding:20px'>Preparando el correo en Gmail…</p>");
+      } catch (e) { gmailWin = null; }
+    }
     enviar();
   }
 
@@ -661,14 +679,14 @@
         });
       }).then(function (r) { return r.json(); }).then(function (j) {
         busy(false);
-        if (j && j.ok) toast("✔ Enviado a " + DEST, 5000);
+        if (j && j.ok) { cerrarGmailWin(); toast("✔ Enviado a " + DEST, 5000); }
         else throw new Error((j && j.error) || "Error del servidor");
       }).catch(function (e) {
         busy(false); console.error(e);
         toast("No se pudo enviar automáticamente. Se abrirá el envío manual.", 4000);
         return enviarManual(p);
       });
-    }).catch(function (e) { busy(false); console.error(e); toast("No se pudo generar el PDF. Intente de nuevo."); });
+    }).catch(function (e) { busy(false); cerrarGmailWin(); console.error(e); toast("No se pudo generar el PDF. Intente de nuevo."); });
   }
 
   function onNuevo() {
