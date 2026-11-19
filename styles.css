@@ -34,6 +34,13 @@ input.auto{background:var(--gray-l);color:#333}
 .suffix{display:flex;align-items:center;gap:6px}
 .suffix em{font-style:normal;font-weight:600;color:var(--muted)}
 
+/* Estado del permiso */
+.estado{border-radius:10px;padding:12px;margin:0 0 14px;font-size:.92rem}
+.estado.abierto{background:#fff8e1;border:1px solid #f0c24b}
+.estado.cerrado{background:#e8f7e6;border:1px solid #8fd487}
+.estado button{display:block;margin-top:10px;border:1px solid #b9c1c8;border-radius:8px;padding:9px 14px;font-weight:700;min-height:42px}
+button.mini{border:1px solid #b9c1c8;background:#fff;border-radius:7px;padding:0 12px;min-height:42px;font-weight:700;color:#333;flex-shrink:0}
+
 /* Trabajadores */
 .worker{border:1px solid var(--line);border-radius:9px;padding:10px;margin:10px 0}
 .worker-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-weight:700}

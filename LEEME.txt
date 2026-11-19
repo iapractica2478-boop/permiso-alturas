@@ -66,3 +66,6 @@ Contenido
   - Firmas: toque "Toque para firmar" y firme con el dedo o el mouse.
   - "Guardar PDF": descarga el permiso con la misma estructura del formato Excel (2 hojas carta).
   - Lo que se escribe queda guardado en el equipo hasta pulsar "Nuevo".
+  - Dos correos por permiso: con la hora de finalización vacía se envía el INICIO
+    (permiso abierto). Al terminar, en el mismo celular/computador, pulse "Cerrar permiso
+    ahora" (o ponga la hora y pulse "Enviar cierre") y se envía el CIERRE.

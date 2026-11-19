@@ -18,6 +18,7 @@
 </header>
 
 <main id="form" class="wrap">
+  <div id="estadoBanner" class="estado hidden" role="status"></div>
 
   <!-- 1 -->
   <section class="card">
@@ -45,7 +46,8 @@
         <input id="horaInicio" type="time">
       </label>
       <label>Hora de finalización del trabajo
-        <input id="horaFin" type="time">
+        <span class="suffix"><input id="horaFin" type="time"><button type="button" id="btnHoraFin" class="mini">Ahora</button></span>
+        <small class="hint" style="margin:0">Déjela vacía para enviar el INICIO. Al terminar, póngala y envíe el CIERRE.</small>
       </label>
       <label class="span2">Tipo de trabajo
         <select id="tipoTrabajo">
@@ -145,7 +147,7 @@
 <nav class="actions">
   <button type="button" id="btnNuevo" class="ghost">Nuevo</button>
   <button type="button" id="btnPdf">Guardar PDF</button>
-  <button type="button" id="btnEnviar" class="primary">Enviar correo</button>
+  <button type="button" id="btnEnviar" class="primary">Enviar inicio</button>
 </nav>
 
 <!-- Firma -->

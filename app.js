@@ -352,11 +352,14 @@
     function toggleOtra() { $("ciudadOtraWrap").classList.toggle("hidden", sel.value !== OTRO); }
     sel.addEventListener("change", toggleOtra); toggleOtra();
     $("fecha").value = S.fecha;
+    $("btnHoraFin").onclick = function () { S.horaFin = horaAhora(); $("horaFin").value = S.horaFin; save(); actualizarEstado(); };
+    $("horaFin").addEventListener("input", actualizarEstado);
+    actualizarEstado();
   }
   function ciudadTxt() { return S.ciudad === OTRO ? (S.ciudadOtra || "") : (S.ciudad || ""); }
 
   function defaults() {
-    S.fecha = hoyCorta();                       // fecha corta automática
+    if (!S.fecha) S.fecha = hoyCorta();         // fecha corta automática (se conserva hasta "Nuevo")
     if (!S.fechaFinal) S.fechaFinal = hoyISO(); // fecha final de ejecución (editable)
     if (!S.horaInicio) S.horaInicio = horaAhora();
   }
@@ -511,7 +514,7 @@
 
   function fileName() {
     var c = ciudadTxt().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, "");
-    return "Permiso_Alturas_" + S.fecha.split("/").reverse().join("-") + (c ? "_" + c : "") + "_" + horaAhora().replace(":", "") + ".pdf";
+    return "Permiso_Alturas_" + (etapa() === "CIERRE" ? "Cierre_" : "Inicio_") + S.fecha.split("/").reverse().join("-") + (c ? "_" + c : "") + "_" + horaAhora().replace(":", "") + ".pdf";
   }
 
   function renderPdf() {
@@ -554,16 +557,49 @@
     });
   }
 
-  function asunto() { return "Permiso de Trabajo en Alturas - " + ciudadTxt() + " - " + S.fecha + (S.tipoTrabajo ? " - " + S.tipoTrabajo : ""); }
+  // ---------- Etapas: INICIO (sin hora final) y CIERRE (con hora final) ----------
+  function etapa() { return S.horaFin ? "CIERRE" : "INICIO"; }
+  function marcarEnviado(e) {
+    var t = horaAhora();
+    if (e === "CIERRE") S.enviadoCierre = t; else S.enviadoInicio = t;
+    save(); actualizarEstado();
+  }
+  function actualizarEstado() {
+    var b = $("estadoBanner"), btn = $("btnEnviar");
+    var e = etapa();
+    btn.textContent = e === "CIERRE" ? "Enviar cierre" : "Enviar inicio";
+    if (S.enviadoCierre && S.horaFin) {
+      b.className = "estado cerrado";
+      b.innerHTML = "<b>🟢 Permiso CERRADO</b> – cierre enviado a las " + esc(S.enviadoCierre) +
+        ". Pulse <b>Nuevo</b> para empezar otro permiso.";
+    } else if (S.enviadoInicio) {
+      b.className = "estado abierto";
+      b.innerHTML = "<b>🟡 Permiso ABIERTO</b> – inicio enviado a las " + esc(S.enviadoInicio) +
+        ". Cuando termine el trabajo, ponga la hora de finalización y envíe el cierre." +
+        '<button type="button" id="btnCerrar" class="primary">Cerrar permiso ahora</button>';
+      $("btnCerrar").addEventListener("click", function () {
+        if (!S.horaFin) { S.horaFin = horaAhora(); $("horaFin").value = S.horaFin; save(); }
+        actualizarEstado(); onEnviar();
+      });
+    } else {
+      b.className = "estado hidden"; b.innerHTML = "";
+    }
+  }
+
+  function asunto() { return "[" + etapa() + "] Permiso de Trabajo en Alturas - " + ciudadTxt() + " - " + S.fecha + (S.tipoTrabajo ? " - " + S.tipoTrabajo : ""); }
   function cuerpo() {
     var ws = [];
     for (var i = 1; i <= N_WORKERS; i++) if (workerName(i)) ws.push("  " + i + ". " + workerName(i) + " - CC " + workerCC(i));
-    return "Cordial saludo,\n\nSe envía el Permiso de Trabajo Seguro en Alturas (PDF adjunto).\n\n" +
+    var intro = etapa() === "CIERRE"
+      ? "Se envía el CIERRE del Permiso de Trabajo Seguro en Alturas (PDF adjunto). Trabajo finalizado a las " + S.horaFin + "."
+      : "Se envía el INICIO del Permiso de Trabajo Seguro en Alturas (PDF adjunto). Permiso abierto: la hora de finalización se enviará en el correo de cierre.";
+    return "Cordial saludo,\n\n" + intro + "\n\n" +
       "Ciudad y fecha: " + ciudadTxt() + ", " + S.fecha + "\n" +
       "Fecha final del trabajo: " + isoACorta(S.fechaFinal) + "\n" +
       "Tipo de trabajo: " + (S.tipoTrabajo || "") + "\n" +
       "Altura aproximada: " + (S.altura || "") + " Mts\n" +
-      "Hora inicio / fin: " + (S.horaInicio || "") + " / " + (S.horaFin || "") + "\n" +
+      "Hora de inicio: " + (S.horaInicio || "") + "\n" +
+      "Hora de finalización: " + (S.horaFin || "pendiente") + "\n" +
       "Trabajadores:\n" + (ws.join("\n") || "  -") + "\n\nM & M TORRES";
   }
 
@@ -573,7 +609,7 @@
     if (lastPdf && lastPdf.sig === sig) return Promise.resolve(lastPdf);
     busy(true, "Generando PDF…");
     return renderPdf().then(function (blob) {
-      lastPdf = { sig: sig, blob: blob, name: fileName() };
+      lastPdf = { sig: sig, blob: blob, name: fileName(), etapa: etapa() };
       return lastPdf;
     }).finally(function () { busy(false); });
   }
@@ -585,6 +621,7 @@
   }
 
   function enviarManual(p) {
+    marcarEnviado(p.etapa);
     var file = null;
     try { file = new File([p.blob], p.name, { type: "application/pdf" }); } catch (e) { /* navegador antiguo */ }
     var esMovil = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -679,7 +716,7 @@
         });
       }).then(function (r) { return r.json(); }).then(function (j) {
         busy(false);
-        if (j && j.ok) { cerrarGmailWin(); toast("✔ Enviado a " + DEST, 5000); }
+        if (j && j.ok) { cerrarGmailWin(); marcarEnviado(p.etapa); toast("✔ Enviado a " + DEST, 5000); }
         else throw new Error((j && j.error) || "Error del servidor");
       }).catch(function (e) {
         busy(false); console.error(e);
