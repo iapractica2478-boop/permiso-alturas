@@ -34,6 +34,13 @@ window.TSA_CONFIG = {
   // LISTADO_PERSONAL.xlsx (columnas NOMBRE COMPLETO y CC). Esta lista solo
   // se usa si ese archivo no se puede leer.
   personal: [
-    { nombre: "JHON FABER CASTRO RODRIGUEZ", cc: "89006736" }
+    { nombre: "JHON FABER CASTRO RODRIGUEZ", cc: "89006736" },
+    { nombre: "CESAR AUGUSTO SALAZAR CARDONA", cc: "98595781" },
+    { nombre: "CRISTIAN GALEANO BUITRAGO", cc: "1152200344" },
+    { nombre: "SERGIO ALVAREZ", cc: "70754769" },
+    { nombre: "YEISON PEÑALOZA", cc: "1147935221" },
+    { nombre: "YORNIS ZALCEDO", cc: "1044989757" },
+    { nombre: "DUBAN ALEXIS ARIAS BERRIO", cc: "1001242751" },
+    { nombre: "ELKIN ARZUZA", cc: "1002295383" }
   ]
 };
