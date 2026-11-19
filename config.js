@@ -19,7 +19,7 @@ window.TSA_CONFIG = {
   // URL del Google Apps Script que envía el correo con el PDF adjunto
   // (ver LEEME.txt, paso "Envío automático"). Si se deja vacío, el botón
   // "Enviar correo" abre la aplicación de correo / compartir del equipo.
-  urlEnvioCorreo: "",
+  urlEnvioCorreo: "https://script.google.com/macros/s/AKfycbzid5D-JI2zKVMvJZJIRcdUEkxt4M8dNkGI6s20i3WnJ2ifBHz-TpFt18s5CStL3JrS/exec",
 
   // Ciudades de la lista desplegable ("Otra" permite escribir una nueva)
   ciudades: [
