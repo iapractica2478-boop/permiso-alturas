@@ -600,7 +600,7 @@
       "Altura aproximada: " + (S.altura || "") + " Mts\n" +
       "Hora de inicio: " + (S.horaInicio || "") + "\n" +
       "Hora de finalización: " + (S.horaFin || "pendiente") + "\n" +
-      "Trabajadores:\n" + (ws.join("\n") || "  -") + "\n\nM & M TORRES";
+      "Trabajadores:\n" + (ws.join("\n") || "  -") + "\n\n" + (S.mailDe ? "Enviado por: " + S.mailDe + "\n" : "") + "M & M TORRES";
   }
 
   var lastPdf = null;
@@ -666,7 +666,7 @@
     listaCorreos().forEach(function (c) { sel.appendChild(el("option", { value: c, text: c })); });
     sel.appendChild(el("option", { value: OTRO, text: "Otro correo (escribir)…" }));
     if (S.mailSel && (S.mailSel === OTRO || listaCorreos().indexOf(S.mailSel) >= 0)) sel.value = S.mailSel;
-    otro.value = S.mailOtro || ""; extra.value = S.mailExtra || "";
+    otro.value = S.mailOtro || ""; extra.value = S.mailExtra || ""; $("mailDe").value = S.mailDe || "";
     function tog() { wrapO.classList.toggle("hidden", sel.value !== OTRO); }
     sel.onchange = tog; tog();
     [otro, extra].forEach(function (x) { x.classList.remove("req-missing"); });
@@ -686,6 +686,7 @@
       if (lista.indexOf(ex[i]) < 0) lista.push(ex[i]);
     }
     if (lista.length > 5) { toast("Máximo 5 destinatarios."); return; }
+    S.mailDe = $("mailDe").value.trim();
     S.mailSel = sel.value; S.mailOtro = otro.value.trim(); S.mailExtra = extra.value.trim(); save();
     DEST = lista.join(", ");
     $("mailModal").classList.add("hidden");
@@ -712,7 +713,7 @@
         return fetch(url, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({ to: DEST, subject: asunto(), body: cuerpo(), filename: p.name, pdf: b64 })
+          body: JSON.stringify({ to: DEST, from: S.mailDe || "", subject: asunto(), body: cuerpo(), filename: p.name, pdf: b64 })
         });
       }).then(function (r) { return r.json(); }).then(function (j) {
         busy(false);

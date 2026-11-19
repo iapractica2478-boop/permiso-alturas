@@ -14,13 +14,16 @@ function doPost(e) {
     var para = String(d.to || "").split(/[,;]+/).map(function (x) { return x.trim(); })
       .filter(function (x) { return re.test(x); }).slice(0, 5);
     if (!para.length) para = [DESTINO];
-    MailApp.sendEmail({
+    var opciones = {
       to: para.join(","),
       subject: String(d.subject || "Permiso de Trabajo en Alturas").slice(0, 200),
       body: String(d.body || ""),
       attachments: [pdf],
       name: "Permisos de Trabajo en Alturas"
-    });
+    };
+    var de = String(d.from || "").trim();          // "De" escrito en la página
+    if (re.test(de)) opciones.replyTo = de;         // las respuestas le llegan a esa persona
+    MailApp.sendEmail(opciones);
     return respuesta({ ok: true });
   } catch (err) {
     return respuesta({ ok: false, error: String(err) });
