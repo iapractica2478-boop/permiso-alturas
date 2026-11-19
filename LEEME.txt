@@ -1,0 +1,65 @@
+PERMISO DE TRABAJO SEGURO EN ALTURAS - FORMULARIO WEB
+=====================================================
+
+Contenido
+---------
+  sitio\           -> La página web (esta es la carpeta que se publica)
+     index.html            Formulario
+     config.js             Ciudades, correo destino y URL de envío (editable con Bloc de notas)
+     LISTADO_PERSONAL.xlsx Listado de trabajadores (NOMBRE COMPLETO / CC)
+  envio-correo\Code.gs   -> Código para el envío automático del correo (opcional)
+
+
+1) PUBLICAR LA PÁGINA (gratis, 2 minutos)
+-----------------------------------------
+  a. Entre a https://app.netlify.com/drop  y cree una cuenta gratis (con su correo o Google).
+  b. Arrastre la carpeta "sitio" completa a la página.
+  c. Netlify le da un enlace como https://nombre-al-azar.netlify.app
+     (en "Site configuration > Change site name" puede ponerle, por ejemplo, permiso-alturas-mym).
+  d. Comparta ese enlace. Funciona en celular y computador, sin instalar nada.
+     En el celular puede usar "Agregar a pantalla de inicio" para tenerlo como una app.
+
+  Para actualizar (por ejemplo, cuando cambie el listado de personal):
+  en Netlify > su sitio > "Deploys", arrastre de nuevo la carpeta "sitio".
+
+
+2) LISTADO DE PERSONAL
+----------------------
+  Edite sitio\LISTADO_PERSONAL.xlsx: columna A = NOMBRE COMPLETO, columna B = CC.
+  Una fila por trabajador. Luego vuelva a publicar (paso 1, "Para actualizar").
+  En el formulario, al escoger el nombre se llena la CC (y al escoger la CC se llena el nombre).
+  Si alguien no está en la lista, use la opción "Otro (escribir)".
+
+
+3) ENVÍO DEL CORREO a auxingenieria@mymtorres.com
+-------------------------------------------------
+  Sin configurar nada, el botón "Enviar correo":
+    - En celular: abre el menú Compartir con el PDF adjunto; escoja Gmail/Outlook
+      (el correo destino queda copiado para pegarlo en "Para").
+    - En computador: descarga el PDF y abre el correo con el destinatario y asunto listos;
+      solo falta adjuntar el PDF descargado.
+
+  ENVÍO AUTOMÁTICO (recomendado, gratis, con una cuenta de Google/Gmail):
+    a. Entre a https://script.google.com  > "Nuevo proyecto".
+    b. Borre lo que aparece y pegue todo el contenido de envio-correo\Code.gs. Guarde.
+    c. Escoja la función "probarEnvio" y pulse "Ejecutar". Acepte los permisos
+       (Google muestra "app no verificada": pulse "Configuración avanzada" > "Ir a ...").
+       Debe llegar un correo de prueba a auxingenieria@mymtorres.com.
+    d. Pulse "Implementar" > "Nueva implementación" > tipo "Aplicación web".
+         Ejecutar como: Yo
+         Quién tiene acceso: Cualquier persona
+       Pulse "Implementar" y copie la URL (termina en /exec).
+    e. Abra sitio\config.js con el Bloc de notas y pegue la URL entre las comillas de
+         urlEnvioCorreo: "https://script.google.com/macros/s/..../exec",
+    f. Vuelva a publicar la carpeta "sitio" en Netlify.
+  Desde ese momento, "Enviar correo" manda el PDF adjunto directamente, sin abrir el correo.
+  (Los correos salen desde la cuenta de Google que hizo el paso c. Límite gratis: 100 correos/día.)
+
+
+4) USO
+------
+  - Ciudad: se escoge de la lista; la fecha corta (dd/mm/aaaa) se pone sola.
+  - Fecha final del trabajo: queda con la fecha de hoy y se puede cambiar.
+  - Firmas: toque "Toque para firmar" y firme con el dedo o el mouse.
+  - "Guardar PDF": descarga el permiso con la misma estructura del formato Excel (2 hojas carta).
+  - Lo que se escribe queda guardado en el equipo hasta pulsar "Nuevo".

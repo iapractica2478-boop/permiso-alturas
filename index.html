@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1fb714">
+<title>Permiso de Trabajo en Alturas</title>
+<link rel="icon" href="img/logo-mym.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="top">
+  <img src="img/logo-mym.png" alt="M&amp;M Torres" class="top-logo">
+  <div class="top-title">
+    <h1>Permiso de Trabajo Seguro en Alturas</h1>
+    <p>Versión 04 · Fecha: 07/07/2025</p>
+  </div>
+</header>
+
+<main id="form" class="wrap">
+
+  <!-- 1 -->
+  <section class="card">
+    <h2>1. Datos básicos del permiso de trabajo en alturas</h2>
+    <div class="grid2">
+      <label>Ciudad
+        <select id="ciudad" required></select>
+      </label>
+      <label class="hidden" id="ciudadOtraWrap">Escriba la ciudad
+        <input id="ciudadOtra" type="text" autocomplete="off">
+      </label>
+      <label>Fecha (automática)
+        <input id="fecha" type="text" readonly class="auto">
+      </label>
+      <label>Fecha final del trabajo
+        <input id="fechaFinal" type="date">
+      </label>
+      <label>Empresa
+        <input id="empresa" type="text" value="M &amp; M TORRES" readonly class="auto">
+      </label>
+      <label>Altura aproximada de la actividad (m)
+        <span class="suffix"><input id="altura" type="number" inputmode="decimal" min="0" step="0.1" placeholder="Ej: 30"><em>Mts</em></span>
+      </label>
+      <label>Hora de inicio del trabajo
+        <input id="horaInicio" type="time">
+      </label>
+      <label>Hora de finalización del trabajo
+        <input id="horaFin" type="time">
+      </label>
+      <label class="span2">Tipo de trabajo
+        <select id="tipoTrabajo">
+          <option value="">Seleccione…</option>
+          <option>Survey</option>
+          <option>Implementación</option>
+          <option>Desmonte</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="card">
+    <h2>2. Trabajadores, verificaciones de certificación y afiliación vigente</h2>
+    <p class="hint" id="personalInfo">Cargando listado de personal…</p>
+    <div id="workers"></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="card">
+    <h2>3. Verificación de requerimientos de aptitud</h2>
+    <p class="hint">Responda por cada trabajador (1 a 5).</p>
+    <div class="scroll-x"><table class="apt" id="aptitud"></table></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="card">
+    <h2>4. Descripción de la tarea</h2>
+    <textarea id="descripcion" rows="3"></textarea>
+  </section>
+
+  <!-- 5 -->
+  <section class="card">
+    <h2>5. Procedimiento de la tarea a realizar</h2>
+    <textarea id="procedimiento" rows="5"></textarea>
+  </section>
+
+  <!-- 6 -->
+  <section class="card">
+    <h2>6. Medidas de prevención contra caídas</h2>
+    <div id="medidas" class="checklist"></div>
+  </section>
+
+  <!-- 7 -->
+  <section class="card">
+    <h2>7. Equipos, sistema de acceso para trabajo en alturas</h2>
+    <p class="hint">Apto para ser usado</p>
+    <div id="equipos" class="checklist"></div>
+  </section>
+
+  <!-- 8 -->
+  <section class="card">
+    <h2>8. Sistemas</h2>
+    <p class="hint">Verifique el tipo de sistema a utilizar en la actividad y marque con SI, NO o N/A</p>
+    <div id="sistemas"></div>
+  </section>
+
+  <!-- 9 -->
+  <section class="card">
+    <h2>9. Elementos de protección personal y contra caídas</h2>
+    <p class="hint">Si el personal cuenta con los siguientes EPP y EPCC, marque SI, de lo contrario NO o N/A</p>
+    <div id="epp"></div>
+  </section>
+
+  <!-- 10 -->
+  <section class="card">
+    <h2>10. Herramientas a utilizar</h2>
+    <textarea id="herramientas" rows="4"></textarea>
+    <p class="hint"><b>Nota:</b> Mencione las herramientas a utilizar, de acuerdo a la actividad a ejecutar. Recuerde realizar el chequeo preoperacional y garantizar el buen estado de las mismas.</p>
+  </section>
+
+  <!-- 11 -->
+  <section class="card">
+    <h2>11. Observaciones</h2>
+    <textarea id="observaciones" rows="4"></textarea>
+  </section>
+
+  <!-- 12-14 -->
+  <section class="card">
+    <h2>12. Persona que autoriza el trabajo</h2>
+    <div class="person" data-key="autoriza"></div>
+  </section>
+  <section class="card">
+    <h2>13. Persona que activa el plan de emergencia</h2>
+    <div class="person" data-key="emergencia"></div>
+  </section>
+  <section class="card">
+    <h2>14. Coordinador de trabajo en alturas</h2>
+    <p class="hint">Cuando es diferente de la persona que autoriza el trabajo</p>
+    <div class="person" data-key="coordinador"></div>
+  </section>
+
+  <div class="actions-spacer"></div>
+</main>
+
+<nav class="actions">
+  <button type="button" id="btnNuevo" class="ghost">Nuevo</button>
+  <button type="button" id="btnPdf">Guardar PDF</button>
+  <button type="button" id="btnEnviar" class="primary">Enviar correo</button>
+</nav>
+
+<!-- Firma -->
+<div id="sigModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="sigTitle">
+  <div class="modal-box">
+    <h3 id="sigTitle">Firma</h3>
+    <canvas id="sigCanvas" width="600" height="260"></canvas>
+    <div class="modal-actions">
+      <button type="button" id="sigClear" class="ghost">Borrar</button>
+      <button type="button" id="sigCancel" class="ghost">Cancelar</button>
+      <button type="button" id="sigOk" class="primary">Guardar firma</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<div id="busy" class="busy hidden"><div class="spinner"></div><p id="busyText">Generando PDF…</p></div>
+
+<!-- Hoja para el PDF (réplica del formato Excel) -->
+<div id="pdfHost" aria-hidden="true"></div>
+
+<script src="vendor/xlsx.mini.min.js"></script>
+<script src="vendor/html2canvas.min.js"></script>
+<script src="vendor/jspdf.umd.min.js"></script>
+<script src="config.js"></script>
+<script src="logo.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
